@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SchoolHub</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="site-title">School<span class="hub-box">Hub</span></h1>
+  </header>
+
+  <h2>Mes vidéos privées</h2>
+
+  <form id="uploadForm" action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+    <label for="videoUpload" id="uploadLabel">+ Ajouter une vidéo</label>
+    <input type="file" name="video" id="videoUpload" accept="video/mp4" required onchange="this.form.submit()" />
+  </form>
+
+  <div class="video-list">
+    {% for video in videos %}
+      <div class="video-item" onclick="playVideo('{{ url_for('static', filename='videos/' + video.name) }}')">
+        <button class="delete-btn" onclick="deleteVideo(event, '{{ video.name }}')">✖</button>
+        <img src="{{ url_for('static', filename='thumbnails/' + video.thumb) }}" alt="Miniature" />
+        <p>{{ video.name }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="player">
+    <video id="videoPlayer" controls>
+      <source src="" type="video/mp4" />
+      Votre navigateur ne supporte pas la lecture vidéo.
+    </video>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
