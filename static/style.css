@@ -1,11 +1,12 @@
 body {
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Roboto", sans-serif;
   background-color: #121212;
   color: #ffffff;
   text-align: center;
   margin: 0;
   padding: 0;
 }
+
 .site-header {
   background-color: #1f1f1f;
   padding: 20px 0;
@@ -14,11 +15,13 @@ body {
   top: 0;
   z-index: 100;
 }
+
 .site-title {
   color: #ffffff;
   font-size: 2.5rem;
   margin: 0;
 }
+
 .hub-box {
   background-color: orange;
   color: black;
@@ -27,60 +30,85 @@ body {
   border-radius: 5px;
   font-weight: bold;
 }
+
 h2 {
-  margin-top: 24px;
-  font-size: 1.6rem;
+  margin-top: 30px;
+  font-size: 1.8rem;
   color: #f0f0f0;
 }
-#uploadLabel {
-  background-color: orange;
-  color: black;
-  font-weight: bold;
-  padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: inline-block;
-  margin: 16px 0 20px;
-}
-#videoUpload { display: none; }
+
 .video-list {
   display: flex;
   justify-content: center;
   gap: 20px;
+  margin: 20px 0;
   flex-wrap: wrap;
   padding: 0 10px;
-  margin-bottom: 30px;
 }
+
 .video-item {
   cursor: pointer;
-  max-width: 220px;
+  transition: transform 0.3s;
+  max-width: 200px;
   position: relative;
 }
+
 .video-item img {
   width: 100%;
   border-radius: 10px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
 }
+
+.video-item:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
 .video-item p {
   color: #cccccc;
-  margin-top: 6px;
+  margin-top: 5px;
   word-break: break-word;
-  font-size: 0.95rem;
 }
-.player { margin: 30px 0 60px; }
+
+.player {
+  margin: 30px 0;
+}
+
 video {
-  width: 92%;
-  max-width: 900px;
+  width: 90%;
+  max-width: 800px;
   border-radius: 10px;
   background-color: #000;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
 }
+
+#addVideoBtn {
+  display: inline-block;
+  background-color: orange;
+  color: black;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 165, 0, 0.4);
+  transition: background 0.3s;
+}
+
+#addVideoBtn:hover {
+  background-color: darkorange;
+}
+
+#addVideoBtn input {
+  display: none;
+}
+
 .delete-btn {
   position: absolute;
   top: 6px;
   right: 6px;
-  background: rgba(255, 0, 0, 0.85);
+  background: rgba(255, 0, 0, 0.8);
   border: none;
   color: white;
   font-weight: bold;
@@ -89,11 +117,4 @@ video {
   height: 24px;
   cursor: pointer;
   z-index: 1;
-}
-@media (max-width: 640px) {
-  .video-item { max-width: 46%; }
-  video { width: 100%; }
-}
-@media (max-width: 420px) {
-  .video-item { max-width: 92%; }
 }
