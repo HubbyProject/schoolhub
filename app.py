@@ -6,8 +6,8 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# 📂 Dossiers
-BASE_DIR = "static"
+# 📂 Dossiers (persistants si DATA_DIR=/data est défini sur Render)
+BASE_DIR = os.environ.get("DATA_DIR", "static")
 VIDEO_FOLDER = os.path.join(BASE_DIR, "videos")
 THUMB_FOLDER = os.path.join(BASE_DIR, "thumbnails")
 METADATA_FILE = os.path.join(BASE_DIR, "metadata.json")
@@ -15,17 +15,49 @@ METADATA_FILE = os.path.join(BASE_DIR, "metadata.json")
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
 os.makedirs(THUMB_FOLDER, exist_ok=True)
 
-# Charger les titres enregistrés
+# 🔎 FFmpeg: Windows local OU Linux (Render)
+DEFAULT_WIN = r"C:\ffmpeg\bin\ffmpeg.exe"
+FFMPEG_BIN = os.environ.get("FFMPEG_BIN") or (DEFAULT_WIN if os.path.exists(DEFAULT_WIN) else "ffmpeg")
+
 def load_metadata():
     if os.path.exists(METADATA_FILE):
         with open(METADATA_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
 
-# Sauvegarder les titres
 def save_metadata(metadata):
     with open(METADATA_FILE, "w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
+
+def get_video_middle_seconds(video_path: str) -> float:
+    # Essaie d’estimer la durée pour capturer au milieu (sinon fallback 1s)
+    try:
+        proc = subprocess.run(
+            [FFMPEG_BIN, "-i", video_path, "-f", "null", "-"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        for line in proc.stderr.splitlines():
+            if "Duration:" in line:
+                part = line.split("Duration:")[1].split(",")[0].strip()
+                h, m, s = part.split(":")
+                total = int(h) * 3600 + int(m) * 60 + float(s)
+                return max(1.0, total / 2.0)
+    except Exception:
+        pass
+    return 1.0
+
+def generate_thumbnail(video_path, thumb_path):
+    middle = get_video_middle_seconds(video_path)
+    cmd = [
+        FFMPEG_BIN,
+        "-ss", str(middle),
+        "-i", video_path,
+        "-vframes", "1",
+        "-q:v", "2",
+        "-s", "320x180",
+        thumb_path
+    ]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
 
 # 🎯 Page d'accueil
 @app.route("/")
@@ -53,21 +85,12 @@ def upload():
     save_path = os.path.join(VIDEO_FOLDER, filename)
     file.save(save_path)
 
-    # 📸 Génération miniature au milieu de la vidéo
+    # 📸 Miniature (au milieu)
     thumb_name = os.path.splitext(filename)[0] + ".jpg"
     thumb_path = os.path.join(THUMB_FOLDER, thumb_name)
-    try:
-        subprocess.run([
-            "C:/ffmpeg/bin/ffmpeg.exe",
-            "-i", save_path,
-            "-ss", "00:00:01",
-            "-vframes", "1",
-            thumb_path
-        ], check=True)
-    except Exception as e:
-        print("Erreur miniature:", e)
+    generate_thumbnail(save_path, thumb_path)
 
-    # 💾 Sauvegarde du titre
+    # 💾 Titre
     title = request.form.get("title", "").strip()
     if not title:
         title = os.path.splitext(filename)[0]
@@ -99,4 +122,5 @@ def delete_video():
     return jsonify({"success": True})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
